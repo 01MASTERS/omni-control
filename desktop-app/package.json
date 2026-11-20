@@ -52,7 +52,7 @@
     "buildDependenciesFromSource": false,
     "publish": {
       "provider": "github",
-      "owner": "OmniControl-HQ",
+      "owner": "01MASTERS",
       "repo": "omni-control"
     },
     "directories": {
