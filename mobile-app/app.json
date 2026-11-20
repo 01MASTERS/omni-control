@@ -24,7 +24,8 @@
       "versionCode": 1,
       "permissions": [
         "CAMERA"
-      ]
+      ],
+      "usesCleartextTraffic": true
     },
     "web": {
       "backgroundColor": "#0b0f19",

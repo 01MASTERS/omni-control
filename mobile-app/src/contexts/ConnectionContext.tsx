@@ -151,6 +151,7 @@ export function ConnectionProvider({ children }: { children: ReactNode }) {
     } catch (err) {
       console.error('[Connection] Connection error:', err);
       setError(err instanceof Error ? err.message : "Connection failed");
+      socketService.disconnect();
       setIsConnected(false);
       setShowConnectionModal(true);
     }

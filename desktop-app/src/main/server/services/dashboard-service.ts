@@ -17,17 +17,61 @@ function readCpuSample(): CpuSample {
 
 function getLocalIp(): string {
   const nets = networkInterfaces();
-  for (const name of Object.keys(nets)) {
-    const netInterfaces = nets[name];
+  const candidates: { address: string; score: number }[] = [];
+
+  for (const [name, netInterfaces] of Object.entries(nets)) {
     if (!netInterfaces) continue;
+    const lowerName = name.toLowerCase();
+
     for (const net of netInterfaces) {
-      // Skip internal (loopback) and non-IPv4 addresses
       if (net.family === "IPv4" && !net.internal) {
-        return net.address;
+        let score = 0;
+
+        // Penalize virtual, loopback, tunnel, or hotspot virtual adapters
+        if (
+          lowerName.includes("*") ||
+          lowerName.includes("virtual") ||
+          lowerName.includes("vethernet") ||
+          lowerName.includes("pseudo") ||
+          lowerName.includes("wsl") ||
+          lowerName.includes("docker") ||
+          lowerName.includes("host-only") ||
+          lowerName.includes("vmware") ||
+          lowerName.includes("vbox") ||
+          lowerName.includes("tailscale") ||
+          lowerName.includes("wireguard")
+        ) {
+          score -= 100;
+        }
+
+        // Penalize Windows ICS hotspot default subnet (192.168.137.x)
+        if (net.address.startsWith("192.168.137.")) {
+          score -= 50;
+        }
+
+        // Prioritize physical Wi-Fi and Ethernet adapters
+        if (
+          lowerName.includes("wi-fi") ||
+          lowerName.includes("wifi") ||
+          lowerName.includes("wlan") ||
+          lowerName.includes("wireless")
+        ) {
+          score += 50;
+        } else if (
+          lowerName.includes("ethernet") ||
+          lowerName.includes("eth") ||
+          lowerName.startsWith("en")
+        ) {
+          score += 40;
+        }
+
+        candidates.push({ address: net.address, score });
       }
     }
   }
-  return "localhost";
+
+  candidates.sort((a, b) => b.score - a.score);
+  return candidates[0]?.address ?? "localhost";
 }
 
 export class DashboardService {

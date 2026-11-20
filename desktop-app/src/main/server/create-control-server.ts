@@ -19,8 +19,25 @@ import { registerSocketGateway } from "./socket/register-gateway";
 
 export function createControlServer() {
   const server = Fastify({ logger: true });
+
+  server.addHook("onRequest", async (request, reply) => {
+    reply.header("Access-Control-Allow-Origin", "*");
+    reply.header(
+      "Access-Control-Allow-Methods",
+      "GET, POST, PUT, DELETE, OPTIONS",
+    );
+    reply.header("Access-Control-Allow-Headers", "*");
+    if (request.method === "OPTIONS") {
+      reply.status(204).send();
+      return reply;
+    }
+  });
+
   const io = new Server(server.server, {
-    cors: { origin: false },
+    cors: {
+      origin: "*",
+      methods: ["GET", "POST"],
+    },
     perMessageDeflate: false,
     httpCompression: false,
     pingInterval: 25000,
