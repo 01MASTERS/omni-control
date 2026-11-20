@@ -52,7 +52,7 @@ class SocketService {
   connect(serverUrl: string): Promise<void> {
     return new Promise((resolve, reject) => {
       this.socket = io(serverUrl, {
-        transports: ["polling", "websocket"],
+        transports: ["websocket", "polling"],
         reconnection: true,
         reconnectionAttempts: 5,
         reconnectionDelay: 1000,
@@ -68,6 +68,7 @@ class SocketService {
       });
 
       this.socket.on("connect_error", (error) => {
+        console.error("[Socket] connect_error:", error.message, error);
         this.connected = false;
         reject(error);
       });

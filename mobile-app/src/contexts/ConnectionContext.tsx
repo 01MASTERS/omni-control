@@ -150,7 +150,11 @@ export function ConnectionProvider({ children }: { children: ReactNode }) {
       }
     } catch (err) {
       console.error('[Connection] Connection error:', err);
-      setError(err instanceof Error ? err.message : "Connection failed");
+      const rawMessage = err instanceof Error ? err.message : "Connection failed";
+      const userMessage = rawMessage.includes("xhr poll")
+        ? "Unable to reach PC server (xhr poll error). Please ensure your PC and phone are on the same network."
+        : rawMessage;
+      setError(userMessage);
       socketService.disconnect();
       setIsConnected(false);
       setShowConnectionModal(true);
